@@ -1,6 +1,6 @@
 import mock
 import pytest
-from pyVmomi import vim
+from pyVmomi import vim, vmodl
 
 from vcdriver.exceptions import (
     NoObjectFound,
@@ -39,11 +39,15 @@ def test_get_vcenter_object_by_name():
     apple = mock.MagicMock()
     orange_1 = mock.MagicMock()
     orange_2 = mock.MagicMock()
+    banana = mock.MagicMock()
     apple.name = 'apple'
     orange_1.name = 'orange'
     orange_2.name = 'orange'
+    banana.name = mock.PropertyMock(
+        side_effect=vmodl.fault.ManagedObjectNotFound
+    )
     view_mock = mock.MagicMock()
-    view_mock.view = [apple, orange_1, orange_2]
+    view_mock.view = [apple, orange_1, orange_2, banana]
     content_mock = mock.MagicMock()
     content_mock.viewManager.CreateContainerView = mock.MagicMock(
         return_value=view_mock
@@ -59,6 +63,11 @@ def test_get_vcenter_object_by_name():
         get_vcenter_object_by_name(
             connection_mock, mock.MagicMock, 'grapes'
         ),
+    with pytest.raises(TooManyObjectsFound):
+        get_vcenter_object_by_name(
+            connection_mock, mock.MagicMock, 'orange'
+        )
+
     with pytest.raises(TooManyObjectsFound):
         get_vcenter_object_by_name(
             connection_mock, mock.MagicMock, 'orange'

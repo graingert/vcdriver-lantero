@@ -9,7 +9,7 @@ import time
 from colorama import init, Style
 from fabric.api import run
 from fabric.context_managers import settings
-from pyVmomi import vim
+from pyVmomi import vim, vmodl
 import winrm
 
 from vcdriver.exceptions import (
@@ -60,10 +60,18 @@ def get_vcenter_object_by_name(connection, object_type, name):
     """
     content = connection.RetrieveContent()
     view = content.viewManager.CreateContainerView
-    objects = [
-        obj for obj in view(content.rootFolder, [object_type], True).view
-        if hasattr(obj, 'name') and obj.name == name
-    ]
+    objects = []
+    for obj in view(content.rootFolder, [object_type], True).view:
+        try:
+            if obj.name == name:
+                objects.append(obj)
+        except vmodl.fault.ManagedObjectNotFound:
+            # In this case we can assume that we have read from a stale view
+            # and now we cannot access the name as it has been deleted or is not
+            # created yet.
+            # In both cases as we want something that exists and has a name
+            # not returning the object is the correct behaviour
+            pass
     count = len(objects)
     if count == 1:
         return objects[0]
