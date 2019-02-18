@@ -40,6 +40,7 @@ def test_get_vcenter_object_by_name():
     orange_1 = mock.MagicMock()
     orange_2 = mock.MagicMock()
     banana = mock.MagicMock()
+    mango = object()  # does not have name attr
     apple.name = 'apple'
     orange_1.name = 'orange'
     orange_2.name = 'orange'
@@ -48,7 +49,7 @@ def test_get_vcenter_object_by_name():
         return_value='banana'
     )
     view_mock = mock.MagicMock()
-    view_mock.view = [apple, orange_1, orange_2, banana]
+    view_mock.view = [apple, orange_1, orange_2, banana, mango]
     content_mock = mock.MagicMock()
     content_mock.viewManager.CreateContainerView = mock.MagicMock(
         return_value=view_mock
@@ -60,6 +61,10 @@ def test_get_vcenter_object_by_name():
     assert get_vcenter_object_by_name(
         connection_mock, mock.MagicMock, 'apple'
     ) == apple
+    with pytest.raises(NoObjectFound):
+        get_vcenter_object_by_name(
+            connection_mock, mock.MagicMock, 'mango'
+        ),
     with pytest.raises(NoObjectFound):
         get_vcenter_object_by_name(
             connection_mock, mock.MagicMock, 'grapes'
