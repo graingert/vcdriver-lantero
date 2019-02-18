@@ -45,8 +45,7 @@ def test_get_vcenter_object_by_name():
     orange_1.name = 'orange'
     orange_2.name = 'orange'
     type(banana).name = mock.PropertyMock(
-        side_effect=vmodl.fault.ManagedObjectNotFound,
-        return_value='banana'
+        side_effect=vmodl.fault.ManagedObjectNotFound
     )
     view_mock = mock.MagicMock()
     view_mock.view = [apple, orange_1, orange_2, banana, mango]
@@ -64,15 +63,15 @@ def test_get_vcenter_object_by_name():
     with pytest.raises(NoObjectFound):
         get_vcenter_object_by_name(
             connection_mock, mock.MagicMock, 'mango'
-        ),
+        )
     with pytest.raises(NoObjectFound):
         get_vcenter_object_by_name(
             connection_mock, mock.MagicMock, 'grapes'
-        ),
+        )
     with pytest.raises(NoObjectFound):
         get_vcenter_object_by_name(
             connection_mock, mock.MagicMock, 'banana'
-        ),
+        )
     with pytest.raises(TooManyObjectsFound):
         get_vcenter_object_by_name(
             connection_mock, mock.MagicMock, 'orange'
