@@ -63,9 +63,8 @@ def get_vcenter_object_by_name(connection, object_type, name):
 
     def name_matches(obj):
         try:
-            if hasattr(obj, 'name'):
-                return obj.name == name
-        except vmodl.fault.ManagedObjectNotFound:
+            return obj.name == name
+        except (vmodl.fault.ManagedObjectNotFound, AttributeError):
             pass
         return False
 
